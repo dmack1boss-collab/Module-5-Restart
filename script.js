@@ -1,5 +1,5 @@
 /**
- * MOVIE FINDER - Final Version with Sorting & Local Filter
+ * MOVIE FINDER - Refined API Search Version
  * API: OMDB API
  */
 
@@ -11,9 +11,8 @@ const searchInput = document.getElementById('searchInput');
 const searchBtn = document.getElementById('searchBtn');
 const sortFilter = document.getElementById('sortFilter');
 
-// Local storage for the 6 "Fast" movies
-let fastMovies = [];
-let currentDisplayMovies = [];
+// Store current search results for sorting
+let currentMovies = [];
 
 /**
  * Show Skeleton Loaders
@@ -35,66 +34,53 @@ function showSkeletons() {
 }
 
 /**
- * Initial Load - Fetch the 6 "fast" movies
+ * Fetch Movies from API based on search query
  */
-async function initApp() {
+async function fetchMovies(query) {
+    if (!query) return;
+    
     showSkeletons();
 
     try {
-        const response = await fetch(`${BASE_URL}?apikey=${API_KEY}&s=fast`);
+        const response = await fetch(`${BASE_URL}?apikey=${API_KEY}&s=${encodeURIComponent(query)}`);
         const data = await response.json();
 
-        if (data.Response === "True") {
-            // Store exactly the first 6 "fast" movies
-            fastMovies = data.Search.slice(0, 6);
-            currentDisplayMovies = [...fastMovies];
-            displayMovies(currentDisplayMovies);
-        } else {
-            moviesGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 50px;">Failed to load initial movies.</p>`;
-        }
+        // Small delay to appreciate the skeleton state
+        setTimeout(() => {
+            if (data.Response === "True") {
+                // Take first 6 results
+                currentMovies = data.Search.slice(0, 6);
+                applySort(); // This will also call displayMovies
+            } else {
+                currentMovies = [];
+                showNoResults(data.Error || "No movies found matching your search.");
+            }
+        }, 600);
+
     } catch (error) {
-        console.error("Error:", error);
-        moviesGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 50px;">Something went wrong.</p>`;
+        console.error("API Error:", error);
+        currentMovies = [];
+        showNoResults("Oops! Something went wrong while fetching movies. Please try again.");
     }
 }
 
 /**
- * Filter - Searches within the local fastMovies array
- */
-function handleSearch() {
-    const query = searchInput.value.trim().toLowerCase();
-    
-    if (!query) {
-        currentDisplayMovies = [...fastMovies];
-    } else {
-        currentDisplayMovies = fastMovies.filter(movie => {
-            const titleMatch = movie.Title.toLowerCase().includes(query);
-            const yearMatch = movie.Year.includes(query);
-            return titleMatch || yearMatch;
-        });
-    }
-
-    // Apply current sort after filtering
-    applySort();
-}
-
-/**
- * Sort - Sorts the currently displayed movies
+ * Sort the current batch of movies
  */
 function applySort() {
     const sortValue = sortFilter.value;
 
     if (sortValue === "A_TO_Z") {
-        currentDisplayMovies.sort((a, b) => a.Title.localeCompare(b.Title));
+        currentMovies.sort((a, b) => a.Title.localeCompare(b.Title));
     } else if (sortValue === "Z_TO_A") {
-        currentDisplayMovies.sort((a, b) => b.Title.localeCompare(a.Title));
+        currentMovies.sort((a, b) => b.Title.localeCompare(a.Title));
     } else if (sortValue === "NEWEST") {
-        currentDisplayMovies.sort((a, b) => parseInt(b.Year) - parseInt(a.Year));
+        currentMovies.sort((a, b) => parseInt(b.Year) - parseInt(a.Year));
     } else if (sortValue === "OLDEST") {
-        currentDisplayMovies.sort((a, b) => parseInt(a.Year) - parseInt(b.Year));
+        currentMovies.sort((a, b) => parseInt(a.Year) - parseInt(b.Year));
     }
 
-    displayMovies(currentDisplayMovies);
+    displayMovies(currentMovies);
 }
 
 /**
@@ -103,10 +89,7 @@ function applySort() {
 function displayMovies(movies) {
     moviesGrid.innerHTML = '';
     
-    if (movies.length === 0) {
-        moviesGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 50px;">No matching movies found within the collection.</p>`;
-        return;
-    }
+    if (movies.length === 0) return; // Should be handled by showNoResults
 
     movies.forEach(movie => {
         const card = document.createElement('div');
@@ -132,19 +115,36 @@ function displayMovies(movies) {
 }
 
 /**
+ * Show No Results or Error Message
+ */
+function showNoResults(message) {
+    moviesGrid.innerHTML = `
+        <div class="no-results" style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
+            <p style="font-size: 18px; color: #666; font-weight: 500;">${message}</p>
+        </div>
+    `;
+}
+
+/**
  * Event Listeners
  */
-searchBtn.addEventListener('click', handleSearch);
-searchInput.addEventListener('input', handleSearch);
-sortFilter.addEventListener('change', applySort);
+searchBtn.addEventListener('click', () => {
+    const query = searchInput.value.trim();
+    if (query) fetchMovies(query);
+});
 
 searchInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
-        handleSearch();
+        const query = searchInput.value.trim();
+        if (query) fetchMovies(query);
     }
 });
 
+sortFilter.addEventListener('change', applySort);
+
 /**
- * Start
+ * Initial Load - Default to "fast"
  */
-window.addEventListener('DOMContentLoaded', initApp);
+window.addEventListener('DOMContentLoaded', () => {
+    fetchMovies("fast");
+});
