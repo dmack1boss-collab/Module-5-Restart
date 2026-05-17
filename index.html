@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieHub - Browse our movies</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- HEADER / NAV -->
+    <header class="hero">
+        <nav class="navbar">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span>blinker</span>
+            </div>
+            <div class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">Find your movie</a>
+                <a href="#" class="contact-btn">CONTACT</a>
+            </div>
+        </nav>
+
+        <div class="hero-content">
+            <h1>Browse our movies</h1>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search by Title or Year..." autocomplete="off">
+                <button id="searchBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="container">
+        <div class="results-header">
+            <h2>Search results:</h2>
+            <div class="sort-container">
+                <label for="sortFilter">Sort by:</label>
+                <select id="sortFilter">
+                    <option value="default" disabled selected>Select an option</option>
+                    <option value="A_TO_Z">Alphabetical, A to Z</option>
+                    <option value="Z_TO_A">Alphabetical, Z to A</option>
+                    <option value="NEWEST">Newest to Oldest</option>
+                    <option value="OLDEST">Oldest to Newest</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="moviesGrid" class="movies-grid">
+            <!-- Movie cards or skeletons will be injected here -->
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+        
+            </div>
+            <div class="footer-links">
+                <a href="#">Home</a>
+                <a href="#">About</a>
+                <a href="#">Movies</a>
+                <a href="#">Contact</a>
+            </div>
+            <p class="copyright">&copy; 2026 DennyMcFarlane. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
